@@ -9,7 +9,7 @@ var _ = require('underscore');
  * customize it in any way you wish.
  */
 
-exports.paths = {
+exports.paths = filePaths = {
   'siteAssets' : path.join(__dirname, '../web/public'),
   'archivedSites' : path.join(__dirname, '../archives/sites'),
   'list' : path.join(__dirname, '../archives/sites.txt')
@@ -26,6 +26,14 @@ exports.initialize = function(pathsObj){
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = function(){
+  var list = fs.readFile(filePaths.list, function(err, data){
+    data = data.toString().split(',');
+    var urls = {};
+    for(var i = 0; i < data.length; i++){
+      urls[data[i]] = '_';
+    }
+    return urls;
+  });
 };
 
 exports.isUrlInList = function(){
@@ -38,4 +46,5 @@ exports.isURLArchived = function(){
 };
 
 exports.downloadUrls = function(){
+  // cron job
 };
