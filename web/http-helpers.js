@@ -25,7 +25,7 @@ exports.serveAssets = function(res, asset) {
   // (Static files are things like html (yours or archived from others...), css, or anything that doesn't change often.)
 };
 
-exports.sendStaticPage = function(req, res){
+exports.sendStaticPage = function(req, res, isLoadingHtmlRequest){
   var uri = url.parse(req.url).pathname;
   var filename = path.join(process.cwd(), uri);
 
@@ -34,9 +34,8 @@ exports.sendStaticPage = function(req, res){
       utils.sendResponse(req, res);
       return;
     } else if (uri === '/') {
-      filename += 'public/index.html';
+      filename += !isLoadingHtmlRequest ? 'public/index.html' : 'public/loading.html';
     }
-    console.log('filename: ' + filename);
 
     var mimeType = mimeTypes[path.extname(filename).split(".")[1]];
     res.writeHead(200, mimeType);

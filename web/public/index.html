@@ -6,7 +6,23 @@
 <body>
   Enter a URL here:
   <form method="POST">
-    <input type="input" name="url"></input>
+    <input type="input" class="url" name="url"></input>
   </form>
+<script>
+$(function(){
+
+$('form').submit(function(e){
+  $.post('page-request', $('input[name="url"]').val(), function(){
+
+  });
+
+  e.preventDefault();
+  return false;
+});
+
+
+});
+</script>
 </body>
 </html>
+

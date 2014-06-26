@@ -22,16 +22,35 @@ exports.handleRequest = function(req, res) {
   var path = url.parse(req.url).pathname;
   var method = req.method;
   console.log('path:', path, 'method:', method);
-  console.log('substr: ' + path.substr(7));
 
   if(path === '/' && messageRouter[method]){
     messageRouter[method](req,res);
     return;
   }
   if(path === '/' && method === 'GET') {
-    archive.readListOfUrls();
-    messages.sendStaticPage(req,res);
-  } else if(path.substr(0,7) === '/public'){
+    messages.sendStaticPage(req,res, false);
+
+  }else if(path === '/' && method === 'POST'){
+    // get data from post
+    var chunk = '';
+    req.on('data', function(data){
+      chunk += data.toString();
+    });
+
+    req.on('end',function(){
+      archive.isUrlInList(chunk, function(urlFound){
+        if(urlFound){
+          // read from sites dir and send cached html
+          // archive.
+        }else{
+          // add url to tmp.txt
+          // response with loading.html
+          messages.sendStaticPage(req,res, true);
+        }
+      });
+    });
+
+  }else if(path.substr(0,7) === '/public'){
     messages.sendStaticPage(req, res);
   }else {
     messages.send404(req, res);
