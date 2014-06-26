@@ -27,16 +27,38 @@ exports.serveAssets = function(res, asset) {
 
 exports.sendStaticPage = function(req, res, isLoadingHtmlRequest){
   var uri = url.parse(req.url).pathname;
+  uri = isLoadingHtmlRequest ? 'public/loading.html' : uri;
   var filename = path.join(process.cwd(), uri);
 
   path.exists(filename, function(exists) {
     if(!exists) {
-      utils.sendResponse(req, res);
+      utils.sendResponse(res);
       return;
     } else if (uri === '/') {
-      filename += !isLoadingHtmlRequest ? 'public/index.html' : 'public/loading.html';
+      filename += 'public/index.html';
     }
 
+    var mimeType = mimeTypes[path.extname(filename).split(".")[1]];
+    res.writeHead(200, mimeType);
+
+    var fileStream = fs.createReadStream(filename);
+    fileStream.pipe(res);
+
+  }); //end path.exists
+};
+
+exports.sendCachedPage = function(req, res, site){
+  var uri = url.parse(req.url).pathname;
+  var filename = archive.paths.archivedSites + '/' + site;
+
+  path.exists(filename, function(exists) {
+    // functions like an assertion. we only reach this
+    // point if we matched a url so there should be a
+    // corresponding file
+    if(!exists) {
+      throw 'cache file does not exist';
+      return;
+    };
     var mimeType = mimeTypes[path.extname(filename).split(".")[1]];
     res.writeHead(200, mimeType);
 

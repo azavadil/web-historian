@@ -2,27 +2,13 @@
 <html>
 <head>
   <link rel="stylesheet" type="text/css" href="public/styles.css" />
+  <!-- <script src="public/bower_components/jquery/dist/jquery.min.js"></script> -->
 </head>
 <body>
   Enter a URL here:
-  <form method="POST">
+  <form method="POST" action='page-request'>
     <input type="input" class="url" name="url"></input>
   </form>
-<script>
-$(function(){
-
-$('form').submit(function(e){
-  $.post('page-request', $('input[name="url"]').val(), function(){
-
-  });
-
-  e.preventDefault();
-  return false;
-});
-
-
-});
-</script>
 </body>
 </html>
 

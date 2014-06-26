@@ -28,24 +28,28 @@ exports.handleRequest = function(req, res) {
     return;
   }
   if(path === '/' && method === 'GET') {
-    messages.sendStaticPage(req,res, false);
+    messages.sendStaticPage(req, res, false);
 
-  }else if(path === '/' && method === 'POST'){
+  }else if(path === '/page-request' && method === 'POST'){
     // get data from post
+    // TODO: refactor to use collectData
     var chunk = '';
     req.on('data', function(data){
       chunk += data.toString();
     });
 
     req.on('end',function(){
+      chunk = chunk.substring(4);
+      console.log('chunk', chunk);
       archive.isUrlInList(chunk, function(urlFound){
         if(urlFound){
+          console.log('url is found');
           // read from sites dir and send cached html
           // archive.
+          messages.sendCachedPage(req, res, chunk);
         }else{
-          // add url to tmp.txt
           // response with loading.html
-          messages.sendStaticPage(req,res, true);
+          messages.sendStaticPage(req, res, true);
         }
       });
     });
