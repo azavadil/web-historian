@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var httpRequest = require('http-request');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -16,6 +17,12 @@ exports.paths = filePaths = {
   'tmp' : path.join(__dirname, '../archives/tmp.txt')
 };
 
+var prepFile = function(data){
+  data = data.toString().split(',');
+  data = data.length > 1 ? data.slice(0,data.length-1) : data;
+  return data;
+};
+
 // Used for stubbing paths for jasmine tests, do not modify
 exports.initialize = function(pathsObj){
   _.each(pathsObj, function(path, type) {
@@ -28,10 +35,8 @@ exports.initialize = function(pathsObj){
 
 exports.readListOfUrls = readListOfUrls = function(url, callback){
   var list = fs.readFile(filePaths.list, function(err, data){
-    data = data.toString().split(',');
-    data = data.length > 1 ? data.slice(0,data.length-1) : data;
+    data = prepFile(data);
     var urls = {};
-  console.log('data', data);
     for(var i = 0; i < data.length; i++){
       urls[data[i]] = true;
     }
@@ -56,14 +61,36 @@ exports.addUrlToList = function(url){
 };
 
 // used by cronApp
-exports.isURLArchived = function(){
+exports.isURLArchived = function(url){
+  var results;
+  fs.readFile(filePaths.list, function(err, data){
+    data = prepFile(data);
+    results = _.contains(data, url);
+  });
+
+  return results;
 };
 
 // used by
-exports.getURLHtml = function(){
+exports.getURLHtml = function(url){
+  httpRequest.get(url, function(err, res){
+    if(err) { console.log(err); return; }
+    filename = filePaths.archivedSites + '/' + url;
+    var newFile = fs.createWriteStream(filename);
 
+    fs.writeFileSync(filename, res.buffer.toString());
+  });
 };
 
 exports.downloadUrls = function(){
   // cron job
+  fs.readFile(filePaths.tmp,  function(err, data){
+    if(err) throw 'did not read tmp file. invoked by downloadUrls';
+    urls = prepFile(data);
+    _.each(urls, function(url){
+      if(!exports.isURLArchived(url)){
+        exports.getURLHtml(url);
+      }
+    });
+  });
 };
