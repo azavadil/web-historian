@@ -14,8 +14,6 @@ var messageRouter = {
 
 exports.handleRequest = function(req, res) {
 
-  archive.downloadUrls();
-
   var path = url.parse(req.url).pathname;
   var method = req.method;
   console.log('path:', path, 'method:', method);

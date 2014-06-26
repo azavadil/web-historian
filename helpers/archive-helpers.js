@@ -44,7 +44,7 @@ exports.readListOfUrls = readListOfUrls = function(url, callback){
       callback(true);
     } else {
       callback(false);
-      exports.addUrlToList(url);
+      exports.addUrlToList(filePaths.tmp, url);
     }
   });
 };
@@ -54,8 +54,8 @@ exports.isUrlInList = function(url, callback){
 
 };
 
-exports.addUrlToList = function(url){
-  fs.appendFile(filePaths.tmp, url.trim()+',', function(err){
+exports.addUrlToList = function(filepath, url){
+  fs.appendFile(filepath, url.trim()+',', function(err){
     if(err) throw 'addUrlToList failed';
   });
 };
@@ -84,13 +84,19 @@ exports.getURLHtml = function(url){
 
 exports.downloadUrls = function(){
   // cron job
+  console.log('cron job triggered');
   fs.readFile(filePaths.tmp,  function(err, data){
     if(err) throw 'did not read tmp file. invoked by downloadUrls';
-    urls = prepFile(data);
+    var urls = prepFile(data);
+    fs.writeFileSync(filePaths.tmp, '');
+
     _.each(urls, function(url){
       if(!exports.isURLArchived(url)){
         exports.getURLHtml(url);
+        exports.addUrlToList(filePaths.list, url);
       }
     });
   });
+
+
 };
