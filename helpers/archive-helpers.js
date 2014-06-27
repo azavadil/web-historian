@@ -2,6 +2,15 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 var httpRequest = require('http-request');
+var mysql = require('mysql');
+
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  database : 'WEB_HIST',
+  user     : 'root'
+});
+
+connection.connect();
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -16,6 +25,10 @@ exports.paths = filePaths = {
   'list' : path.join(__dirname, '../archives/sites.txt'),
   'tmp' : path.join(__dirname, '../archives/tmp.txt')
 };
+
+
+
+
 
 var prepFile = function(data){
   data = data.toString().split(',');
@@ -34,19 +47,22 @@ exports.initialize = function(pathsObj){
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = readListOfUrls = function(url, callback){
-  var list = fs.readFile(filePaths.list, function(err, data){
-    data = prepFile(data);
-    var urls = {};
-    for(var i = 0; i < data.length; i++){
-      urls[data[i]] = true;
-    }
-    if(urls[url]){
-      callback(true);
+
+  connection.query('SELECT * from sites where url=?',url, function(err, results){
+    if(err){
+      throw(err);
     } else {
-      callback(false);
-      exports.addUrlToList(filePaths.tmp, url);
+      if(results.length === 0 || results[0].html === null){
+        callback(false);
+        if(results.length === 0) {
+          exports.addUrlToList(url);
+        }
+      } else {
+        callback(true);
+      }
     }
   });
+
 };
 
 exports.isUrlInList = function(url, callback){
@@ -54,9 +70,14 @@ exports.isUrlInList = function(url, callback){
 
 };
 
-exports.addUrlToList = function(filepath, url){
-  fs.appendFile(filepath, url.trim()+',', function(err){
-    if(err) throw 'addUrlToList failed';
+exports.addUrlToList = function(url){
+
+  connection.query('INSERT INTO sites VALUES (?,?)',[url.trim(),null],function(err,result){
+    if(err){
+      throw(err)
+    } else {
+      console.log(result);
+    }
   });
 };
 
@@ -97,6 +118,5 @@ exports.downloadUrls = function(){
       }
     });
   });
-
 
 };
