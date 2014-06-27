@@ -3,6 +3,26 @@ var fs = require('fs');
 var archive = require('../helpers/archive-helpers');
 var utils = require('./server-utils');
 var url = require('url');
+var mysql = require('mysql');
+
+
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  database : 'WEB_HIST',
+  user     : 'root'
+});
+
+connection.connect();
+connection.query('SELECT * FROM sites', function(err, rows, fields) {
+  if (err) throw err;
+
+  console.log('rows', rows);
+  console.log('fields', fields);
+
+});
+
+connection.end();
+
 
 exports.headers = headers = {
   "access-control-allow-origin": "*",
